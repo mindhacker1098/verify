@@ -3,7 +3,6 @@ from flask_cors import CORS
 from docx import Document
 from docx2pdf import convert
 import os
-import pythoncom
 import logging
 from pymongo import MongoClient
 from gridfs import GridFS
