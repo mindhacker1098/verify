@@ -70,6 +70,8 @@ def verify_certificate(id):
         logging.error(f"An error occurred: {str(e)}")
         return jsonify({'valid': False, 'error': str(e)}), 500
 
+import pypandoc
+
 @app.route('/download/zidio/<int:id>', methods=['GET'])
 def download_certificate(id):
     certificate_id = f"zidio/{id:05d}"  # Format ID with leading zeros
@@ -100,8 +102,8 @@ def download_certificate(id):
 
         output_pdf_path = f"certificates/{name}.pdf"
 
-        # Convert DOCX to PDF
-        convert(temp_docx_path, output_pdf_path)
+        # Convert DOCX to PDF using pypandoc
+        pypandoc.convert_file(temp_docx_path, 'pdf', outputfile=output_pdf_path)
 
         os.remove(temp_docx_path)
 
@@ -114,7 +116,6 @@ def download_certificate(id):
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
         return jsonify({'error': str(e)}), 500
-
 if __name__ == '__main__':
     from waitress import serve
     serve(app, host='0.0.0.0', port=5000, connection_limit=10000, expose_tracebacks=True, ident=None, threads=4, url_scheme='http', asyncore_use_poll=True, cleanup_interval=30)
