@@ -15,7 +15,7 @@ app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
 logging.basicConfig(level=logging.INFO)
 
 # MongoDB setup
-MONGO_URI = 'mongodb://localhost:27017/'  # Replace with your MongoDB URI
+MONGO_URI = 'mongodb+srv://mindhacker1098:spn1098@cluster0.t66x9u5.mongodb.net/?retryWrites=true&w=majority'  # Replace with your MongoDB URI
 client = MongoClient(MONGO_URI)
 db = client['certificates_db']  # Replace with your database name
 collection = db['certificates']  # Replace with your collection name
