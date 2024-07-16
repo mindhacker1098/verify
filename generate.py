@@ -40,11 +40,13 @@ def replace_placeholder(doc, placeholder, value):
                     for run in paragraph.runs:
                         if placeholder in run.text:
                             run.text = run.text.replace(placeholder, value)
+
 def serialize_document(doc):
     """ Convert MongoDB document to a JSON serializable format """
     if doc:
         doc['_id'] = str(doc['_id'])  # Convert ObjectId to string
-    return doc                            
+    return doc
+
 @app.route('/verify/zidio/<string:id>', methods=['GET'])
 def verify_certificate(id):
     certificate_id = f'zidio/{id}'
@@ -67,6 +69,7 @@ def verify_certificate(id):
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
         return jsonify({'valid': False, 'error': str(e)}), 500
+
 @app.route('/download/zidio/<int:id>', methods=['GET'])
 def download_certificate(id):
     certificate_id = f"zidio/{id:05d}"  # Format ID with leading zeros
@@ -92,20 +95,26 @@ def download_certificate(id):
         replace_placeholder(doc, "<<start>>", start_date)
         replace_placeholder(doc, "<<end>>", end_date)
 
-        temp_docx_path = f"certificates/{name}.docx"  # Save as DOCX
-
+        temp_docx_path = f"temp.docx"
         doc.save(temp_docx_path)
 
-        # Ensure file exists before sending
-        if os.path.exists(temp_docx_path):
-            return send_file(temp_docx_path, as_attachment=True, download_name='Certificate.docx')
+        output_pdf_path = f"certificates/{name}.pdf"
+
+        # Convert DOCX to PDF
+        convert(temp_docx_path, output_pdf_path)
+
+        os.remove(temp_docx_path)
+
+        if os.path.exists(output_pdf_path):
+            return send_file(output_pdf_path, as_attachment=True, download_name='Certificate.pdf')
         else:
-            logging.error(f"Generated file not found: {temp_docx_path}")
+            logging.error(f"Generated file not found: {output_pdf_path}")
             abort(404)
 
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     from waitress import serve
     serve(app, host='0.0.0.0', port=5000, connection_limit=10000, expose_tracebacks=True, ident=None, threads=4, url_scheme='http', asyncore_use_poll=True, cleanup_interval=30)
