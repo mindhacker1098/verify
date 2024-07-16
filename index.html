@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        #verifyButton, #downloadButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #downloadButton {
+            display: none;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #result {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Certificate Verification</h1>
+    <input type="text" placeholder="Insert ID (e.g., 00001)" id="idInput">
+    <button id="verifyButton">Verify</button>
+    <p id="result"></p>
+    <button id="downloadButton">Download Certificate</button>
+
+    <script>
+        document.getElementById('verifyButton').addEventListener('click', async function(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('idInput').value.trim();
+            const certificateId = `zidio/${id}`;
+            const resultElement = document.getElementById('result');
+            const downloadButton = document.getElementById('downloadButton');
+
+            try {
+                // Send GET request to verify the certificate ID
+                const response = await fetch(`http://127.0.0.1:5000/verify/zidio/${id}`);
+                
+                if (!response.ok) {
+                    throw new Error('Certificate not found');
+                }
+
+                const data = await response.json();
+
+                if (data.valid) {
+                    resultElement.textContent = 'Valid';
+                    downloadButton.style.display = 'inline';
+                    downloadButton.onclick = function() {
+                        window.location.href = `http://127.0.0.1:5000/download/zidio/${id}`;
+                    };
+                } else {
+                    resultElement.textContent = 'Invalid';
+                    downloadButton.style.display = 'none';
+                }
+            } catch (error) {
+                resultElement.textContent = 'Error: ' + error.message;
+                downloadButton.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
