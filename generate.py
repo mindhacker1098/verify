@@ -93,30 +93,20 @@ def download_certificate(id):
         replace_placeholder(doc, "<<start>>", start_date)
         replace_placeholder(doc, "<<end>>", end_date)
 
-        temp_docx_path = f"temp.docx"
+        temp_docx_path = f"certificates/{name}.docx"  # Save as DOCX
+
         doc.save(temp_docx_path)
 
-        output_pdf_path = f"certificates/{name}.pdf"
-
-        # Ensure COM is initialized for conversion
-        pythoncom.CoInitialize()
-        try:
-            convert(temp_docx_path, output_pdf_path)
-        finally:
-            pythoncom.CoUninitialize()
-
-        os.remove(temp_docx_path)
-
-        if os.path.exists(output_pdf_path):
-            return send_file(output_pdf_path, as_attachment=True,download_name='Certificate.pdf')
+        # Ensure file exists before sending
+        if os.path.exists(temp_docx_path):
+            return send_file(temp_docx_path, as_attachment=True, download_name='Certificate.docx')
         else:
-            logging.error(f"Generated file not found: {output_pdf_path}")
+            logging.error(f"Generated file not found: {temp_docx_path}")
             abort(404)
 
     except Exception as e:
         logging.error(f"An error occurred: {str(e)}")
         return jsonify({'error': str(e)}), 500
-
 if __name__ == '__main__':
     from waitress import serve
     serve(app, host='0.0.0.0', port=5000, connection_limit=10000, expose_tracebacks=True, ident=None, threads=4, url_scheme='http', asyncore_use_poll=True, cleanup_interval=30)
